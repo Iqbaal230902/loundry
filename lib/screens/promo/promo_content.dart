@@ -6,7 +6,7 @@ class PromoContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
       children: [
         Text(
           'Promo Menarik',

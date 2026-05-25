@@ -23,7 +23,7 @@ async function createUser({ full_name, email, phone_number, password_hash }) {
  */
 async function findByEmail(email) {
   const query = `
-    SELECT id, full_name, email, phone_number, password_hash, created_at, updated_at
+    SELECT id, full_name, email, phone_number, password_hash, profile_photo_url, created_at, updated_at
     FROM users
     WHERE email = $1 AND is_active = TRUE
   `;
@@ -38,7 +38,7 @@ async function findByEmail(email) {
  */
 async function findById(id) {
   const query = `
-    SELECT id, full_name, email, phone_number, created_at, updated_at
+    SELECT id, full_name, email, phone_number, profile_photo_url, created_at, updated_at
     FROM users
     WHERE id = $1 AND is_active = TRUE
   `;
@@ -46,4 +46,36 @@ async function findById(id) {
   return result.rows[0] || null;
 }
 
-module.exports = { createUser, findByEmail, findById };
+/**
+ * Updates a user's password.
+ * @param {string} id - UUID
+ * @param {string} newPasswordHash
+ * @returns {boolean}
+ */
+async function updatePassword(id, newPasswordHash) {
+  const query = `
+    UPDATE users
+    SET password_hash = $2
+    WHERE id = $1
+  `;
+  const result = await pool.query(query, [id, newPasswordHash]);
+  return result.rowCount > 0;
+}
+
+/**
+ * Updates a user's profile photo.
+ * @param {string} id - UUID
+ * @param {string} photoUrl
+ * @returns {boolean}
+ */
+async function updateProfilePhoto(id, photoUrl) {
+  const query = `
+    UPDATE users
+    SET profile_photo_url = $2
+    WHERE id = $1
+  `;
+  const result = await pool.query(query, [id, photoUrl]);
+  return result.rowCount > 0;
+}
+
+module.exports = { createUser, findByEmail, findById, updatePassword, updateProfilePhoto };

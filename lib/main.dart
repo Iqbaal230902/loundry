@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -51,6 +52,33 @@ class _LaundryHomePageState extends State<LaundryHomePage> {
     });
   }
 
+  Widget _buildNavItem(int index, IconData activeIcon, IconData inactiveIcon) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          // Light blue background for active icon
+          color: isSelected ? const Color(0xFFE0F2FE) : Colors.transparent, 
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          isSelected ? activeIcon : inactiveIcon,
+          // Blue color for active, Grey for inactive
+          color: isSelected ? const Color(0xFF2563EB) : Colors.grey[400], 
+          size: 26,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
@@ -65,42 +93,48 @@ class _LaundryHomePageState extends State<LaundryHomePage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: pages[_selectedIndex],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2563EB),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Beranda',
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: pages[_selectedIndex],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long),
-            label: 'Pesanan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer_outlined),
-            activeIcon: Icon(Icons.local_offer),
-            label: 'Promo',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                child: Container(
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(35), // Pill shape
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08), // Soft shadow
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // 4 Requested Icons: Home, Search, Globe, Compass
+                      _buildNavItem(0, CupertinoIcons.house_fill, CupertinoIcons.house),
+                      _buildNavItem(1, CupertinoIcons.search, CupertinoIcons.search),
+                      _buildNavItem(2, CupertinoIcons.globe, CupertinoIcons.globe),
+                      _buildNavItem(3, CupertinoIcons.compass, CupertinoIcons.compass),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

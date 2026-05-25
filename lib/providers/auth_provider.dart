@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/user_model.dart';
@@ -122,6 +124,42 @@ class AuthProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Changes the user's password.
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    _setLoading();
+    try {
+      await _repository.changePassword(oldPassword, newPassword);
+      _authState = AuthState.authenticated;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _setError(e.message);
+      return false;
+    } catch (e) {
+      _setError('Terjadi kesalahan. Silakan coba lagi.');
+      return false;
+    }
+  }
+
+  /// Updates the user's profile photo.
+  Future<bool> updateProfilePhoto(File image) async {
+    _setLoading();
+    try {
+      _user = await _repository.changeProfilePhoto(image);
+      _authState = AuthState.authenticated;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _setError(e.message);
+      return false;
+    } catch (e) {
+      _setError('Terjadi kesalahan saat mengunggah foto.');
+      return false;
+    }
   }
 
   // --- Private Helpers ---

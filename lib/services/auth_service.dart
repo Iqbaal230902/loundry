@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../core/constants/api_constants.dart';
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
@@ -38,6 +40,28 @@ class AuthService {
     final response = await _apiService.get(ApiConstants.me);
     final data = response['data'] as Map<String, dynamic>;
     return UserModel.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  /// Changes user password.
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    await _apiService.put(
+      ApiConstants.password,
+      body: {
+        'old_password': oldPassword,
+        'new_password': newPassword,
+      },
+    );
+  }
+
+  /// Changes user profile photo.
+  Future<String> changeProfilePhoto(File image) async {
+    final response = await _apiService.multipartPut(
+      ApiConstants.profilePhoto,
+      file: image,
+      fileField: 'photo',
+    );
+    final data = response['data'] as Map<String, dynamic>;
+    return data['profile_photo_url'] as String;
   }
 
   /// Disposes the API service.

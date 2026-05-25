@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
@@ -107,6 +109,23 @@ class AuthRepository {
   /// Gets the cached user without network call.
   Future<UserModel?> getCachedUser() async {
     return await _storage.getUser();
+  }
+
+  /// Changes user password.
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    await _authService.changePassword(oldPassword, newPassword);
+  }
+
+  /// Changes user profile photo.
+  Future<UserModel> changeProfilePhoto(File image) async {
+    final photoUrl = await _authService.changeProfilePhoto(image);
+    final user = await _storage.getUser();
+    if (user != null) {
+      final updatedUser = user.copyWith(profilePhotoUrl: photoUrl);
+      await _storage.saveUser(updatedUser);
+      return updatedUser;
+    }
+    throw ApiException(message: 'User not found in local storage');
   }
 
   /// Disposes resources.

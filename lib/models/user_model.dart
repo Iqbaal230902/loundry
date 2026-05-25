@@ -4,6 +4,7 @@ class UserModel {
   final String fullName;
   final String email;
   final String? phoneNumber;
+  final String? profilePhotoUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -12,6 +13,7 @@ class UserModel {
     required this.fullName,
     required this.email,
     this.phoneNumber,
+    this.profilePhotoUrl,
     this.createdAt,
     this.updatedAt,
   });
@@ -22,6 +24,7 @@ class UserModel {
       fullName: json['full_name'] as String,
       email: json['email'] as String,
       phoneNumber: json['phone_number'] as String?,
+      profilePhotoUrl: json['profile_photo_url'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
@@ -37,6 +40,7 @@ class UserModel {
       'full_name': fullName,
       'email': email,
       'phone_number': phoneNumber,
+      'profile_photo_url': profilePhotoUrl,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -47,6 +51,7 @@ class UserModel {
     String? fullName,
     String? email,
     String? phoneNumber,
+    String? profilePhotoUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -55,6 +60,7 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

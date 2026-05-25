@@ -57,7 +57,7 @@ class HomeContentWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: _buildActiveOrderCard(context),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 110),
         ],
       ),
     );

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { validationResult, body } = require('express-validator');
-const { createUser, findByEmail, findById } = require('../models/userModel');
+const { createUser, findByEmail, findById, updatePassword, updateProfilePhoto } = require('../models/userModel');
 const { generateToken } = require('../utils/tokenUtils');
 
 // Validation rules
@@ -34,6 +34,17 @@ const loginValidation = [
     .normalizeEmail(),
   body('password')
     .notEmpty().withMessage('Kata sandi wajib diisi'),
+];
+
+const passwordValidation = [
+  body('old_password')
+    .notEmpty().withMessage('Kata sandi lama wajib diisi'),
+  body('new_password')
+    .notEmpty().withMessage('Kata sandi baru wajib diisi')
+    .isLength({ min: 8 }).withMessage('Kata sandi baru minimal 8 karakter')
+    .matches(/[A-Z]/).withMessage('Kata sandi baru harus mengandung huruf besar')
+    .matches(/[0-9]/).withMessage('Kata sandi baru harus mengandung angka')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Kata sandi baru harus mengandung karakter spesial'),
 ];
 
 /**
@@ -88,6 +99,7 @@ async function register(req, res) {
           full_name: user.full_name,
           email: user.email,
           phone_number: user.phone_number,
+          profile_photo_url: user.profile_photo_url || null,
         },
       },
     });
@@ -149,6 +161,7 @@ async function login(req, res) {
           full_name: user.full_name,
           email: user.email,
           phone_number: user.phone_number,
+          profile_photo_url: user.profile_photo_url || null,
         },
       },
     });
@@ -183,6 +196,7 @@ async function getMe(req, res) {
           full_name: user.full_name,
           email: user.email,
           phone_number: user.phone_number,
+          profile_photo_url: user.profile_photo_url || null,
         },
       },
     });
@@ -195,10 +209,71 @@ async function getMe(req, res) {
   }
 }
 
+/**
+ * PUT /api/auth/password (protected)
+ */
+async function changePassword(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: errors.array()[0].msg,
+      });
+    }
+
+    const { old_password, new_password } = req.body;
+    const user = await findByEmail(req.user?.email || (await findById(req.userId)).email);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
+    }
+
+    const isMatch = await bcrypt.compare(old_password, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Kata sandi lama salah' });
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    const newPasswordHash = await bcrypt.hash(new_password, salt);
+    await updatePassword(user.id, newPasswordHash);
+
+    return res.status(200).json({ success: true, message: 'Kata sandi berhasil diubah' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+  }
+}
+
+/**
+ * PUT /api/auth/profile-photo (protected)
+ */
+async function changeProfilePhoto(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Foto tidak ditemukan' });
+    }
+
+    const photoUrl = '/uploads/' + req.file.filename;
+    await updateProfilePhoto(req.userId, photoUrl);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Foto profil berhasil diperbarui',
+      data: { profile_photo_url: photoUrl }
+    });
+  } catch (error) {
+    console.error('Change profile photo error:', error);
+    return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
+  }
+}
+
 module.exports = {
   register,
   login,
   getMe,
+  changePassword,
+  changeProfilePhoto,
   registerValidation,
   loginValidation,
+  passwordValidation,
 };

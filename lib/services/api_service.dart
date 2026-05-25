@@ -139,6 +139,86 @@ class ApiService {
     }
   }
 
+  /// Performs a PUT request.
+  Future<Map<String, dynamic>> put(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final response = await _client
+          .put(
+            _buildUri(path),
+            headers: _buildHeaders(extra: headers),
+            body: body != null ? jsonEncode(body) : null,
+          )
+          .timeout(ApiConstants.connectionTimeout);
+      return _handleResponse(response);
+    } on SocketException {
+      throw const ApiException(
+        message: 'Tidak ada koneksi internet',
+        statusCode: 0,
+      );
+    } on TimeoutException {
+      throw const ApiException(
+        message: 'Koneksi timeout. Silakan coba lagi',
+        statusCode: 0,
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message: 'Terjadi kesalahan: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Performs a multipart PUT request (e.g. for file uploads).
+  Future<Map<String, dynamic>> multipartPut(
+    String path, {
+    required File file,
+    required String fileField,
+    Map<String, String>? fields,
+  }) async {
+    try {
+      final request = http.MultipartRequest('PUT', _buildUri(path));
+      
+      final headers = _buildHeaders();
+      // Remove content type as MultipartRequest handles it
+      headers.remove('Content-Type');
+      request.headers.addAll(headers);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      request.files.add(await http.MultipartFile.fromPath(fileField, file.path));
+
+      final streamedResponse = await _client.send(request).timeout(ApiConstants.connectionTimeout);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } on SocketException {
+      throw const ApiException(
+        message: 'Tidak ada koneksi internet',
+        statusCode: 0,
+      );
+    } on TimeoutException {
+      throw const ApiException(
+        message: 'Koneksi timeout. Silakan coba lagi',
+        statusCode: 0,
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message: 'Terjadi kesalahan: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
   /// Closes the HTTP client.
   void dispose() {
     _client.close();

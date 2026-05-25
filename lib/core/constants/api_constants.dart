@@ -10,6 +10,8 @@ class ApiConstants {
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';
   static const String me = '/api/auth/me';
+  static const String password = '/api/auth/password';
+  static const String profilePhoto = '/api/auth/profile-photo';
 
   // Headers
   static const String contentType = 'application/json';

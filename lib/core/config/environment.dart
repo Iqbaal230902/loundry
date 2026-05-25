@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 /// Environment configuration for the app.
 ///
 /// Switch environment via build flags:
@@ -38,9 +41,13 @@ class EnvironmentConfig {
           defaultValue: 'https://staging-api.yourlaundryapp.com',
         );
       case Environment.development:
-        return const String.fromEnvironment(
+        String defaultUrl = 'http://localhost:3000';
+        if (!kIsWeb && Platform.isAndroid) {
+          defaultUrl = 'http://10.0.2.2:3000';
+        }
+        return String.fromEnvironment(
           'BASE_URL',
-          defaultValue: 'http://localhost:3000',
+          defaultValue: defaultUrl,
         );
     }
   }

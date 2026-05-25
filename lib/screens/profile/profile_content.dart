@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../core/config/environment.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_page.dart';
+import '../settings/settings_page.dart';
 
 class ProfileContentWidget extends StatelessWidget {
   const ProfileContentWidget({super.key});
@@ -15,7 +19,7 @@ class ProfileContentWidget extends StatelessWidget {
     final user = authProvider.user;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
       children: [
         Center(
           child: Column(
@@ -25,10 +29,15 @@ class ProfileContentWidget extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFF2563EB), width: 3),
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 50, color: Colors.grey),
+                  backgroundImage: user?.profilePhotoUrl != null 
+                      ? CachedNetworkImageProvider('${EnvironmentConfig.baseUrl}${user!.profilePhotoUrl}')
+                      : null,
+                  child: user?.profilePhotoUrl == null
+                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                      : null,
                 ),
               ),
               const SizedBox(height: 16),
@@ -45,7 +54,12 @@ class ProfileContentWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        _buildProfileMenu(Icons.settings, 'Pengaturan', () {}),
+        _buildProfileMenu(Icons.settings, 'Pengaturan', () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsPage()),
+          );
+        }),
         _buildProfileMenu(Icons.location_on, 'Alamat Tersimpan', () {}),
         _buildProfileMenu(Icons.help_outline, 'Pusat Bantuan', () {}),
         const SizedBox(height: 16),
